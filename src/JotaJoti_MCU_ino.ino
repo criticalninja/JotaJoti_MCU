@@ -52,16 +52,33 @@ class buttons {
       bool temp[4];
       bool change;
       for(int i = 0; i < 4; i++){
-        temp[i] = digitalRead(m_buttonPins[i]);
+        temp[i] = !digitalRead(m_buttonPins[i]);
         if(temp[i] != m_buttonState[i]){
           flag = true;
           change = true;
           m_buttonState[i] = temp[i];
         }
       }
+      return change;
+    }
+
+    bool status(int number) {
+      return m_buttonState[number];
+    }
+
+    int statusAsNumber() {
+    // Will always return the first button that is pressed
+      for (int i = 0; i < 4; i ++) {
+        if (m_buttonState[i] == true){
+          return (i+1);
+        }
+      }
+      return 0;
     }
 
 };
+
+buttons Buttons(button1, button2, button3, button4);
 
 void setup() {
   // Setup onboard LED
@@ -91,5 +108,40 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  uint32_t time;
+
+  // Wait for button input
+  while(Buttons.flag == false){
+    Buttons.update();
+    // If we don't have a button press, toggle the onboard LED once per second
+    if(time+1000 < millis()){
+      ledInvert();
+      time = millis();
+    }
+  }
+
+  // Once the flag has been set
+  ledLow();
+  Buttons.flag = false;
+  int selection = Buttons.statusAsNumber();
+
+  switch(selection){
+    case 1:
+      Serial.println("1");
+      break;
+    case 2:
+      Serial.println("2");
+      break;
+    case 3:
+      Serial.println("3");
+      break;
+    case 4:
+      Serial.println("4");
+      break;
+    default:
+      Serial.println("Error!");
+      break;
+  } 
+
 
 }
