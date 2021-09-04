@@ -29,6 +29,40 @@ void ledHigh() {
   digitalWrite(LED_BUILTIN, ledState);
 }
 
+class buttons {
+  private:
+    int m_buttonPins[4];
+    bool m_buttonState[4];
+
+  public:
+    bool flag;
+
+    buttons(int pin1, int pin2, int pin3, int pin4) {
+      m_buttonPins[0] = pin1;
+      m_buttonPins[1] = pin2;
+      m_buttonPins[2] = pin3;
+      m_buttonPins[3] = pin4;
+      for(int i = 0; i < 4; i++){
+        pinMode(m_buttonPins[i], INPUT);
+      }
+      flag = false;
+    }
+
+    bool update() {
+      bool temp[4];
+      bool change;
+      for(int i = 0; i < 4; i++){
+        temp[i] = digitalRead(m_buttonPins[i]);
+        if(temp[i] != m_buttonState[i]){
+          flag = true;
+          change = true;
+          m_buttonState[i] = temp[i];
+        }
+      }
+    }
+
+};
+
 void setup() {
   // Setup onboard LED
 
