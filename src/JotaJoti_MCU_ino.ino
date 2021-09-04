@@ -12,6 +12,8 @@ volatile bool debug = false;
 #define checksum 0xB5
 #define eepromGame 0x10
 
+bool ledState;
+
 struct leds
   {
     volatile bool l1;
@@ -24,7 +26,8 @@ void setup() {
   // Setup onboard LED
 
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
+  ledState = HIGH;
+  digitalWrite(LED_BUILTIN, ledState);
   
   // Setup serial port
   Serial.begin(115200);
@@ -35,7 +38,8 @@ void setup() {
     debug = true;
   }
 
-  digitalWrite(LED_BUILTIN, LOW);
+  ledState = LOW;
+  digitalWrite(LED_BUILTIN, ledState);
 
   // Setup our output pins
 
@@ -73,6 +77,7 @@ void simon() {
   // The structure for the game
   leds game[rounds];
 
+  // Get the game data from EEPROM
   for (int i = 0; i < rounds; i ++){
     game[i].l1 = eepromGet(0, i);
     game[i].l2 = eepromGet(1, i);
@@ -80,7 +85,30 @@ void simon() {
     game[i].l4 = eepromGet(3, i);
   }
 
-  // Update the structure from the stored game values
+  // Game tracking variables
+  bool flag = false;
+  uint32_t time = 0;
+  bool buttons[4];
+
+  // Until a button is pressed, we toggle the LED every second
+  while(flag == false) {
+    if(time+1000 < millis()){
+      invertLed();
+      time = millis();
+    }
+
+    buttons[0] = digitalRead(button1);
+    buttons[1] = digitalRead(button2);
+    buttons[2] = digitalRead(button3);
+    buttons[3] = digitalRead(button4);
+
+    for(int i = 0; i < 3; i++){
+      if(buttons[i] == HIGH){
+        flag = true;
+      }
+    }
+
+  }
 
 }
 
@@ -114,4 +142,9 @@ void eepromGameUpdate(bool bit1, bool bit2, bool bit3, bool bit4, int round){
 
   EEPROM.update((eepromGame+round), temp);
 
+}
+
+void invertLed() {
+  ledState = !ledState;
+  digitalWrite(LED_BUILTIN, ledState);
 }
